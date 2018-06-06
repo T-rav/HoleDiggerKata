@@ -19,26 +19,25 @@ let DiggingCalculation = function(){
 };
 
 let HoleDiggingPlanner = function() {
-  let _length;
-  let _oldDistance;
-  let _newDistances = [];
-  let holeCalculator = new DiggingCalculation();
+  
 
-  let buildOldHoles = function(){
+  let buildOldHoles = function(length,oldDistance){
     let existingHoles = [];
     
-    for(let x = 0; x <= _length; x+= _oldDistance){
+    for(let x = 0; x <= length; x+= oldDistance){
       existingHoles.push(x);
     }
 
     return existingHoles;
   }
 
-  let selectBestPlan = function(_newDistances, buildOldHoles, holeCalculator, length) {
-    let selectedDistance = _newDistances[0];
+  let selectBestPlan = function(newDistances, length, previousDistance) {
+    let holeCalculator = new DiggingCalculation();
+
+    let selectedDistance = newDistances[0];
     let selectedDistanceWorkItems = Number.MAX_SAFE_INTEGER;
-    let oldHoles = buildOldHoles();
-    _newDistances.forEach(element => {
+    let oldHoles = buildOldHoles(length, previousDistance);
+    newDistances.forEach(element => {
       let numberOfWorkItems = holeCalculator.numberOfHolesNeeded(length, element, oldHoles);
       if (numberOfWorkItems < selectedDistanceWorkItems) {
         selectedDistance = element;
@@ -50,28 +49,27 @@ let HoleDiggingPlanner = function() {
 
   return{
     withLength : function(length){
-      _length = length;
       return{
         withOldDistance: function(oldDistance){
-          _oldDistance = oldDistance;
           return{
             withNewDistance:function(newDistance){
-              _newDistances.push(newDistance);
+              let newDistances = [];
+              newDistances.push(newDistance);
               return{
                 withNewDistance:function(newDistance){
-                  _newDistances.push(newDistance);
+                  newDistances.push(newDistance);
                   return this;
                 },
                 pickNewDistance:function(){
-                  if(_newDistances.length == 1){
-                    let result =  _newDistances[0];
-                    if(result >= _oldDistance){
+                  if(newDistances.length == 1){
+                    let result =  newDistances[0];
+                    if(result >= oldDistance){
                       return HoleDiggingConstants.NoNewPlan;
                     }
                     return result;
                   }
                   
-                  return selectBestPlan(_newDistances, buildOldHoles, holeCalculator, length);
+                  return selectBestPlan(newDistances, length, oldDistance);
                 }
               }
             }
