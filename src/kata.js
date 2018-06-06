@@ -34,6 +34,20 @@ let HoleDiggingPlanner = function() {
     return existingHoles;
   }
 
+  let selectBestPlan = function(_newDistances, buildOldHoles, holeCalculator, length) {
+    let selectedDistance = _newDistances[0];
+    let selectedDistanceWorkItems = Number.MAX_SAFE_INTEGER;
+    let oldHoles = buildOldHoles();
+    _newDistances.forEach(element => {
+      let numberOfWorkItems = holeCalculator.numberOfHolesNeeded(length, element, oldHoles);
+      if (numberOfWorkItems < selectedDistanceWorkItems) {
+        selectedDistance = element;
+        selectedDistanceWorkItems = numberOfWorkItems;
+      }
+    });
+    return selectedDistance;
+  }
+
   return{
     withLength : function(length){
       _length = length;
@@ -57,20 +71,7 @@ let HoleDiggingPlanner = function() {
                     return result;
                   }
                   
-                  let selectedDistance = _newDistances[0];
-                  let selectedDistanceWorkItems = Number.MAX_SAFE_INTEGER;
-
-                  let oldHoles = buildOldHoles();
-                  _newDistances.forEach(element=>{
-                    let numberOfWorkItems = holeCalculator.numberOfHolesNeeded(length, element, oldHoles);
-                    if(numberOfWorkItems < selectedDistanceWorkItems){
-                      selectedDistance = element;
-                      selectedDistanceWorkItems = numberOfWorkItems;
-                    }
-                  });
-
-                  return selectedDistance;
-
+                  return selectBestPlan(_newDistances, buildOldHoles, holeCalculator, length);
                 }
               }
             }
@@ -80,3 +81,4 @@ let HoleDiggingPlanner = function() {
     }
   }
 }
+
